@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 0. Raw script URL’in (main branch) ve kopyalanacağı yol
+# 0. Raw script URL’in (main branch) ve yere kopyalanacak yol
 SCRIPT_URL="https://raw.githubusercontent.com/Lorento34/diode-mysite-setup-service/main/mysite.sh"
 SCRIPT_PATH="/usr/local/bin/mysite.sh"
 
@@ -15,11 +15,11 @@ sudo apt install -y unzip nginx curl
 # 3. Diode CLI yükle
 curl -sSf https://diode.io/install.sh | sh
 
-# 4. .bashrc’yi kaynakla (PATH güncellemesi için)
-if [[ -f "$HOME/.bashrc" ]]; then
-  # shellcheck source=/dev/null
-  source "$HOME/.bashrc"
+# 4. ~/.bashrc’ye PATH ekle (tekrarlanmaması için kontrol ederek) ve geçici export et
+if ! grep -q '/root/opt/diode' "$HOME/.bashrc"; then
+  echo 'export PATH=/root/opt/diode:$PATH' >> "$HOME/.bashrc"
 fi
+export PATH=/root/opt/diode:$PATH
 
 # 5. Nginx site konfigürasyonu oluştur
 sudo tee /etc/nginx/sites-available/mysite > /dev/null <<EOF
@@ -41,7 +41,7 @@ sudo nginx -t
 sudo systemctl enable nginx
 sudo systemctl restart nginx
 
-# 7. Kendini güncel haliyle /usr/local/bin’e indir
+# 7. Script’in güncel halini /usr/local/bin’e indir ve izin ver
 sudo curl -sSL "$SCRIPT_URL" -o "$SCRIPT_PATH"
 sudo chmod +x "$SCRIPT_PATH"
 
