@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 0. Raw script URL’in ve kopyalanacağı yer
-SCRIPT_URL="https://raw.githubusercontent.com/Lorento34/diode-mysite-setup-service/refs/heads/main/mysite.sh"
+# 0. Raw script URL’in (main branch) ve kopyalanacağı yol
+SCRIPT_URL="https://raw.githubusercontent.com/Lorento34/diode-mysite-setup-service/main/mysite.sh"
 SCRIPT_PATH="/usr/local/bin/mysite.sh"
 
 # 1. mysite klasörünü oluştur
@@ -41,7 +41,7 @@ sudo nginx -t
 sudo systemctl enable nginx
 sudo systemctl restart nginx
 
-# 7. Kendini güncel haliyle /usr/local/bin’de sakla
+# 7. Kendini güncel haliyle /usr/local/bin’e indir
 sudo curl -sSL "$SCRIPT_URL" -o "$SCRIPT_PATH"
 sudo chmod +x "$SCRIPT_PATH"
 
@@ -62,7 +62,7 @@ EOF
 
 # 9. systemd’yi yenile, servisi etkinleştir ve başlat
 sudo systemctl daemon-reload
-sudo systemctl enable mysite-setup.service
-sudo systemctl start mysite-setup.service
+sudo systemctl enable mysite-setup
+sudo systemctl start mysite-setup
 
 echo "✅ mysite kurulumu, Nginx config ve systemd servisi başarıyla hazırlandı!"
