@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# 0. Raw script URL’in ve kopyalanacağı yer
+SCRIPT_URL="https://raw.githubusercontent.com/Lorento34/diode-mysite-setup-service/refs/heads/main/mysite.sh"
+SCRIPT_PATH="/usr/local/bin/mysite.sh"
+
 # 1. mysite klasörünü oluştur
 mkdir -p "$HOME/mysite"
 
-# 2. Paketleri yükle
+# 2. Gerekli paketleri yükle
 sudo apt update
-sudo apt install -y unzip nginx
+sudo apt install -y unzip nginx curl
 
 # 3. Diode CLI yükle
 curl -sSf https://diode.io/install.sh | sh
 
-# 4. .bashrc’yi kaynakla (eklenmiş PATH için)
+# 4. .bashrc’yi kaynakla (PATH güncellemesi için)
 if [[ -f "$HOME/.bashrc" ]]; then
   # shellcheck source=/dev/null
   source "$HOME/.bashrc"
@@ -31,18 +35,17 @@ server {
 }
 EOF
 
-# 6. Site’ı etkinleştir ve Nginx’i test edip yeniden başlat
+# 6. Site’ı etkinleştir, Nginx’i test et ve yeniden başlat
 sudo ln -sf /etc/nginx/sites-available/mysite /etc/nginx/sites-enabled/mysite
 sudo nginx -t
 sudo systemctl enable nginx
 sudo systemctl restart nginx
 
-# 7. Kendini kopyalayıp çalıştırılabilir yap (systemd için)
-SCRIPT_PATH="/usr/local/bin/mysite-setup.sh"
-sudo cp "$0" "$SCRIPT_PATH"
+# 7. Kendini güncel haliyle /usr/local/bin’de sakla
+sudo curl -sSL "$SCRIPT_URL" -o "$SCRIPT_PATH"
 sudo chmod +x "$SCRIPT_PATH"
 
-# 8. Systemd birimi oluştur
+# 8. systemd servis birimini oluştur
 sudo tee /etc/systemd/system/mysite-setup.service > /dev/null <<EOF
 [Unit]
 Description=MySite & Diode Setup Service
@@ -57,7 +60,7 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
-# 9. systemd’yi yenile, servisi etkinleştir ve ayağa kaldır
+# 9. systemd’yi yenile, servisi etkinleştir ve başlat
 sudo systemctl daemon-reload
 sudo systemctl enable mysite-setup.service
 sudo systemctl start mysite-setup.service
